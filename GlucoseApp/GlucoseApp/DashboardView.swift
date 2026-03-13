@@ -9,6 +9,7 @@ import SwiftUI
 import Charts
 
 struct DashboardView: View {
+    @EnvironmentObject var authViewModel: AuthViewModel
     @EnvironmentObject var activityVM: ActivityViewModel
     @EnvironmentObject var foodVM: FoodViewModel
     @EnvironmentObject var sleepVM: SleepViewModel
@@ -163,6 +164,13 @@ struct DashboardView: View {
                 .padding()
             }
             .navigationTitle("🏠 Dashboard")
+            .toolbar {
+                ToolbarItem(placement: .navigationBarTrailing) {
+                    Button("Sign Out") {
+                        authViewModel.signOut()
+                    }
+                }
+            }
         }
     }
 }

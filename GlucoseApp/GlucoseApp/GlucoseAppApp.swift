@@ -19,12 +19,18 @@ class AppDelegate: NSObject, UIApplicationDelegate {
 @main
 struct GlucoseAppApp: App {
   @UIApplicationDelegateAdaptor(AppDelegate.self) var delegate
+  @StateObject private var authViewModel = AuthViewModel()
 
   var body: some Scene {
     WindowGroup {
-      NavigationView {
-        ContentView()
+      Group {
+        if authViewModel.user != nil {
+          ContentView()
+        } else {
+          LoginView()
+        }
       }
+      .environmentObject(authViewModel)
     }
   }
 }

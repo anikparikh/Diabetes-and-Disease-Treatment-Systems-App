@@ -1,10 +1,10 @@
 import SwiftUI
 
 struct LoginView: View {
+    @EnvironmentObject var authViewModel: AuthViewModel
     @State private var email = ""
     @State private var password = ""
     @State private var showPassword = false
-    @State private var showError = false
 
     var body: some View {
         NavigationView {
@@ -37,23 +37,30 @@ struct LoginView: View {
                 .cornerRadius(10)
                 
                 Button(action: handleLogin) {
-                    Text("Log In")
-                        .frame(maxWidth: .infinity)
-                        .padding()
-                        .background(Color.green)
-                        .foregroundColor(.white)
-                        .cornerRadius(10)
+                    if authViewModel.isLoading {
+                        ProgressView()
+                            .frame(maxWidth: .infinity)
+                            .padding()
+                    } else {
+                        Text("Log In")
+                            .frame(maxWidth: .infinity)
+                            .padding()
+                    }
                 }
+                .background(Color.green)
+                .foregroundColor(.white)
+                .cornerRadius(10)
+                .disabled(authViewModel.isLoading)
 
-                if showError {
-                    Text("Invalid email or password.")
+                if let errorMessage = authViewModel.authError {
+                    Text(errorMessage)
                         .foregroundColor(.red)
                         .font(.caption)
                 }
 
                 Spacer()
 
-                NavigationLink(destination: SignupView()) {
+                NavigationLink(destination: SignupView().environmentObject(authViewModel)) {
                     Text("Don't have an account? Sign up")
                         .foregroundColor(.blue)
                 }
@@ -64,14 +71,11 @@ struct LoginView: View {
     }
 
     func handleLogin() {
-        if email.lowercased() == "test@example.com" && password == "password" {
-            print("Logged in successfully")
-        } else {
-            showError = true
-        }
+        authViewModel.signIn(email: email, password: password)
     }
 }
 
 #Preview {
     LoginView()
+        .environmentObject(AuthViewModel())
 }
