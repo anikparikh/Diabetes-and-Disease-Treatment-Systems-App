@@ -137,6 +137,10 @@ final class AuthViewModel: ObservableObject {
             }
 
         case .failure(let error):
+            let nsError = error as NSError
+            // Silently ignore user-initiated cancellations
+            guard !(nsError.domain == ASAuthorizationError.errorDomain &&
+                    nsError.code == ASAuthorizationError.Code.canceled.rawValue) else { return }
             authError = error.localizedDescription
         }
     }
@@ -149,7 +153,7 @@ final class AuthViewModel: ObservableObject {
 
     private func randomNonceString(length: Int = 32) -> String {
         precondition(length > 0)
-        let charset: [Character] = Array("0123456789ABCDEFGHIJKLMNOPQRSTUVXYZabcdefghijklmnopqrstuvwxyz-._")
+        let charset: [Character] = Array("0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz-._")
         var result = ""
         var remainingLength = length
 

@@ -14,6 +14,7 @@ struct LoginView: View {
                     .font(.largeTitle.bold())
                     .foregroundColor(.green)
                     .padding(.top, 50)
+                    .onAppear { authViewModel.authError = nil }
                 
                 TextField("Email", text: $email)
                     .padding()
@@ -21,6 +22,7 @@ struct LoginView: View {
                     .cornerRadius(10)
                     .autocapitalization(.none)
                     .keyboardType(.emailAddress)
+                    .onChange(of: email) { _ in authViewModel.authError = nil }
 
                 HStack {
                     if showPassword {
@@ -36,6 +38,7 @@ struct LoginView: View {
                 .padding()
                 .background(Color(.systemGray6))
                 .cornerRadius(10)
+                .onChange(of: password) { _ in authViewModel.authError = nil }
                 
                 Button(action: handleLogin) {
                     if authViewModel.isLoading {

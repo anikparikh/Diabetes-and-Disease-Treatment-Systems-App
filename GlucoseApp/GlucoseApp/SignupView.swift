@@ -21,6 +21,7 @@ struct SignupView: View {
                 .font(.largeTitle.bold())
                 .foregroundColor(.green)
                 .padding(.top, 40)
+                .onAppear { authViewModel.authError = nil }
 
             TextField("Email", text: $email)
                 .padding()
@@ -28,6 +29,7 @@ struct SignupView: View {
                 .cornerRadius(10)
                 .autocapitalization(.none)
                 .keyboardType(.emailAddress)
+                .onChange(of: email) { _ in authViewModel.authError = nil }
 
             Group {
                 if showPassword {
