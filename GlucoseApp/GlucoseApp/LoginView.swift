@@ -1,4 +1,5 @@
 import SwiftUI
+import AuthenticationServices
 
 struct LoginView: View {
     @EnvironmentObject var authViewModel: AuthViewModel
@@ -51,6 +52,11 @@ struct LoginView: View {
                 .foregroundColor(.white)
                 .cornerRadius(10)
                 .disabled(authViewModel.isLoading)
+
+                SignInWithAppleButton(.signIn, onRequest: authViewModel.prepareAppleSignInRequest, onCompletion: authViewModel.handleAppleSignInResult)
+                    .signInWithAppleButtonStyle(.black)
+                    .frame(height: 50)
+                    .disabled(authViewModel.isLoading)
 
                 if let errorMessage = authViewModel.authError {
                     Text(errorMessage)
