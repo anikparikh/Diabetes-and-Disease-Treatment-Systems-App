@@ -1,10 +1,11 @@
 import SwiftUI
+import AuthenticationServices
 
 struct LoginView: View {
+    @EnvironmentObject var authViewModel: AuthViewModel
     @State private var email = ""
     @State private var password = ""
     @State private var showPassword = false
-    @State private var showError = false
 
     var body: some View {
         NavigationView {
@@ -13,6 +14,7 @@ struct LoginView: View {
                     .font(.largeTitle.bold())
                     .foregroundColor(.green)
                     .padding(.top, 50)
+                    .onAppear { authViewModel.authError = nil }
                 
                 TextField("Email", text: $email)
                     .padding()
@@ -20,6 +22,7 @@ struct LoginView: View {
                     .cornerRadius(10)
                     .autocapitalization(.none)
                     .keyboardType(.emailAddress)
+                    .onChange(of: email) { _ in authViewModel.authError = nil }
 
                 HStack {
                     if showPassword {
@@ -35,25 +38,38 @@ struct LoginView: View {
                 .padding()
                 .background(Color(.systemGray6))
                 .cornerRadius(10)
+                .onChange(of: password) { _ in authViewModel.authError = nil }
                 
                 Button(action: handleLogin) {
-                    Text("Log In")
-                        .frame(maxWidth: .infinity)
-                        .padding()
-                        .background(Color.green)
-                        .foregroundColor(.white)
-                        .cornerRadius(10)
+                    if authViewModel.isLoading {
+                        ProgressView()
+                            .frame(maxWidth: .infinity)
+                            .padding()
+                    } else {
+                        Text("Log In")
+                            .frame(maxWidth: .infinity)
+                            .padding()
+                    }
                 }
+                .background(Color.green)
+                .foregroundColor(.white)
+                .cornerRadius(10)
+                .disabled(authViewModel.isLoading)
 
-                if showError {
-                    Text("Invalid email or password.")
+                SignInWithAppleButton(.signIn, onRequest: authViewModel.prepareAppleSignInRequest, onCompletion: authViewModel.handleAppleSignInResult)
+                    .signInWithAppleButtonStyle(.black)
+                    .frame(height: 50)
+                    .disabled(authViewModel.isLoading)
+
+                if let errorMessage = authViewModel.authError {
+                    Text(errorMessage)
                         .foregroundColor(.red)
                         .font(.caption)
                 }
 
                 Spacer()
 
-                NavigationLink(destination: SignupView()) {
+                NavigationLink(destination: SignupView().environmentObject(authViewModel)) {
                     Text("Don't have an account? Sign up")
                         .foregroundColor(.blue)
                 }
@@ -64,14 +80,11 @@ struct LoginView: View {
     }
 
     func handleLogin() {
-        if email.lowercased() == "test@example.com" && password == "password" {
-            print("Logged in successfully")
-        } else {
-            showError = true
-        }
+        authViewModel.signIn(email: email, password: password)
     }
 }
 
 #Preview {
     LoginView()
+        .environmentObject(AuthViewModel())
 }
