@@ -16,6 +16,7 @@ struct DashboardView: View {
     
     // Selected date for the dashboard (defaults to today)
     @State private var selectedDate: Date = Date()
+    @State private var predictedGlucose: String = "--"
     
     // MARK: - Helpers
     
@@ -65,6 +66,30 @@ struct DashboardView: View {
         return "\(avg) mg/dL"
     }
     
+    private func generatePrediction() {
+    let activityBG = activityVM.entries
+        .filter { Calendar.current.isDate($0.date, inSameDayAs: selectedDate) }
+        .compactMap { $0.bloodGlucoseAfter }
+
+    let foodBG = foodVM.entries
+        .filter { Calendar.current.isDate($0.date, inSameDayAs: selectedDate) }
+        .compactMap { $0.bloodGlucoseAfter }
+
+    let sleepBG = sleepVM.entries
+        .filter { Calendar.current.isDate($0.date, inSameDayAs: selectedDate) }
+        .compactMap { $0.bloodGlucoseWaking }
+
+    let allBGs = activityBG + foodBG + sleepBG
+
+    guard !allBGs.isEmpty else {
+        predictedGlucose = "--"
+        return
+    }
+
+    let avg = allBGs.reduce(0, +) / allBGs.count
+    let estimatedFuture = avg + 8
+    predictedGlucose = "\(estimatedFuture) mg/dL"
+}
     // MARK: - Body
     var body: some View {
         NavigationView {
@@ -115,6 +140,25 @@ struct DashboardView: View {
                             color: .green
                         )
                     }
+                    
+                    VStack(spacing: 12) {
+    Text("Predicted Future Glucose")
+        .font(.headline)
+
+    Text(predictedGlucose)
+        .font(.title2)
+        .fontWeight(.bold)
+        .foregroundColor(.blue)
+
+    Button("Generate Prediction") {
+        generatePrediction()
+    }
+    .buttonStyle(.borderedProminent)
+}
+.padding()
+.frame(maxWidth: .infinity)
+.background(Color(.systemGray6))
+.cornerRadius(12)
                     
                     // Charts (still show recent entries, independent of selected date)
                     VStack(alignment: .leading, spacing: 16) {
